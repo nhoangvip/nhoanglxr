@@ -1,817 +1,1318 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>UCHIHA PANEL V2 | Sharingan Optimization</title>
-  <!-- Font Awesome 6 cho icon -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Uchiha VIP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
 
-    body {
-      font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-      background: #0a0a0a;
-      color: #e0e0e0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+        body {
+            min-height: 100vh;
+            background: #0b0b0b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-    /* ========== BACKGROUND UCHIHA EFFECT ========== */
-    .uchiha-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 20% 20%, #2d0000, #0a0a0a 80%);
-      z-index: -2;
-    }
+        /* ===== LOADING SCREEN ===== */
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #0b0000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease;
+        }
+        #loading-screen.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #loading-screen .spinner {
+            width: 70px;
+            height: 70px;
+            border: 6px solid #2a0a0a;
+            border-top: 6px solid #ff3333;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            box-shadow: 0 0 40px #ff222266;
+        }
+        #loading-screen p {
+            margin-top: 20px;
+            color: #ff8888;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px #ff000066;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-    .sharingan-pattern {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.08"><circle cx="50" cy="50" r="40" fill="none" stroke="%23ff1a1a" stroke-width="1.5"/><circle cx="50" cy="50" r="25" fill="none" stroke="%23ff1a1a" stroke-width="1"/><circle cx="50" cy="50" r="8" fill="%23ff1a1a"/><path d="M50 10 L50 25 M50 75 L50 90 M10 50 L25 50 M75 50 L90 50" stroke="%23ff1a1a" stroke-width="1.5"/></svg>');
-      background-size: 180px 180px;
-      pointer-events: none;
-      z-index: -1;
-    }
+        /* ===== NỀN CANVAS ===== */
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
 
-    /* ========== CONTAINER CHÍNH ========== */
-    #app {
-      width: 100%;
-      max-width: 1300px;
-      margin: 20px;
-      display: none;
-    }
+        /* ===== GLASS CARD ===== */
+        .glass-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 520px;
+            backdrop-filter: blur(20px) saturate(200%);
+            -webkit-backdrop-filter: blur(20px) saturate(200%);
+            background: rgba(10, 0, 0, 0.45);
+            border: 1px solid rgba(255, 60, 60, 0.2);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), 0 0 60px rgba(200, 0, 0, 0.2);
+            border-radius: 48px 48px 32px 32px;
+            padding: 28px 20px 36px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #f0e6e6;
+        }
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(255, 50, 50, 0.3), rgba(150, 0, 255, 0.2), rgba(255, 50, 50, 0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
 
-    /* ========== LOGIN PAGE ========== */
-    .login-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 100vh;
-      padding: 20px;
-    }
+        /* ===== CURSOR GLOW ===== */
+        * {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="30" viewBox="0 0 24 30"><circle cx="12" cy="12" r="10" fill="rgba(255,0,0,0.3)" stroke="%23ff2222" stroke-width="1.5"/><circle cx="12" cy="12" r="4" fill="%23ff4444"/></svg>') 12 12, auto;
+        }
 
-    .login-card {
-      background: rgba(20, 0, 0, 0.85);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 60, 60, 0.3);
-      border-radius: 32px;
-      padding: 3rem 2.5rem;
-      width: 100%;
-      max-width: 450px;
-      box-shadow: 0 30px 50px rgba(255, 0, 0, 0.2), 0 0 80px rgba(180, 0, 0, 0.3);
-      text-align: center;
-      transition: all 0.3s ease;
-    }
+        /* ===== LOGO ===== */
+        .uchiha-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 28px;
+            position: relative;
+        }
+        .uchiha-logo::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff333388, #ff3333, #ff333388, transparent);
+        }
+        .uchiha-logo svg {
+            filter: drop-shadow(0 0 40px #ff2a2a);
+            width: 80px;
+            height: 80px;
+            animation: pulseGlow 2s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% { filter: drop-shadow(0 0 20px #ff2222) drop-shadow(0 0 40px #ff222244); }
+            100% { filter: drop-shadow(0 0 50px #ff5555) drop-shadow(0 0 80px #aa000088); }
+        }
+        .uchiha-logo h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, #f0c0c0, #ff3b3b, #cc1111, #ff3b3b);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmerText 3s ease-in-out infinite;
+            text-shadow: 0 0 60px #aa000066;
+            margin-top: -8px;
+        }
+        @keyframes shimmerText {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .uchiha-logo .subtitle {
+            font-size: 0.7rem;
+            color: #aa6666;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-top: 2px;
+            font-weight: 300;
+        }
 
-    .uchiha-logo {
-      font-size: 4rem;
-      color: #ff3131;
-      text-shadow: 0 0 25px #ff0000, 0 0 10px #aa0000;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
+        /* ===== LOGIN ===== */
+        #login-area {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+        #login-area input {
+            background: rgba(20, 0, 0, 0.7);
+            border: 2px solid #aa2a2a;
+            border-radius: 60px;
+            padding: 18px 24px;
+            font-size: 1.1rem;
+            color: #f5e0e0;
+            outline: none;
+            backdrop-filter: blur(4px);
+            transition: 0.3s;
+            text-align: center;
+            letter-spacing: 2px;
+            font-weight: 500;
+        }
+        #login-area input:focus {
+            border-color: #ff5555;
+            box-shadow: 0 0 40px #ff222288, inset 0 0 20px #ff222233;
+            transform: scale(1.02);
+        }
+        #login-area input.shake {
+            animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20% { transform: translateX(-12px); }
+            40% { transform: translateX(12px); }
+            60% { transform: translateX(-8px); }
+            80% { transform: translateX(8px); }
+        }
+        #login-area button {
+            background: linear-gradient(145deg, #b31b1b, #7a0e0e);
+            border: none;
+            border-radius: 60px;
+            padding: 18px;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #fff;
+            letter-spacing: 4px;
+            box-shadow: 0 0 40px #cc222266, inset 0 0 30px rgba(255,255,255,0.05);
+            transition: 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+        #login-area button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent, rgba(255,255,255,0.05));
+            transform: translateX(-100%);
+            transition: 0.6s;
+        }
+        #login-area button:hover::before { transform: translateX(100%); }
+        #login-area button:hover {
+            transform: scale(1.03);
+            background: #cc2222;
+            box-shadow: 0 0 80px #ff3333, 0 0 120px #ff333344;
+        }
+        #login-area button:active { transform: scale(0.97); }
+        #login-error {
+            color: #ff8a8a;
+            text-align: center;
+            min-height: 28px;
+            font-weight: 500;
+            text-shadow: 0 0 20px #ff0000;
+            font-size: 0.95rem;
+        }
 
-    .uchiha-logo i {
-      font-size: 3.5rem;
-    }
+        /* ===== DASHBOARD ===== */
+        #dashboard {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeSlideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    .login-card h2 {
-      font-size: 2.2rem;
-      font-weight: 700;
-      letter-spacing: 4px;
-      color: #fff;
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 0 15px crimson;
-    }
+        /* ===== HEADER ===== */
+        .dash-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 14px;
+            border-bottom: 2px solid rgba(255, 70, 70, 0.2);
+            position: relative;
+        }
+        .dash-header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 40%;
+            height: 2px;
+            background: linear-gradient(90deg, #ff3333, transparent);
+        }
+        .dash-header .left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .dash-header .left svg {
+            width: 40px;
+            height: 40px;
+            filter: drop-shadow(0 0 20px #ff2222);
+            animation: rotateSharingan 8s linear infinite;
+        }
+        @keyframes rotateSharingan {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .dash-header .left .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .dash-header .left .user-name {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #f0d0d0;
+            text-shadow: 0 0 20px #ff444466;
+        }
+        .dash-header .left .user-name i {
+            color: #ff6666;
+            font-size: 0.8rem;
+            margin-left: 6px;
+        }
+        .dash-header .right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+        .dash-header .right .role {
+            background: rgba(170, 34, 34, 0.3);
+            padding: 4px 16px;
+            border-radius: 40px;
+            border: 1px solid #ff4a4a;
+            font-weight: 600;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 20px #ff222244;
+        }
+        .dash-header .right .role.admin {
+            border-color: #ffaa44;
+            color: #ffaa44;
+            box-shadow: 0 0 30px #ffaa4455;
+        }
+        .time-glow {
+            font-size: 0.85rem;
+            font-weight: 300;
+            text-shadow: 0 0 20px #ff7777;
+            color: #ffb3b3;
+            font-variant-numeric: tabular-nums;
+        }
+        .sound-toggle {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #663333;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            color: #ff8888;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sound-toggle:hover {
+            background: rgba(255,50,50,0.15);
+            border-color: #ff5555;
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #ff333355;
+        }
+      /* ===== NAV TABS ===== */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin: 4px 0 8px;
+            border-bottom: 1px solid rgba(255,70,70,0.15);
+            padding-bottom: 8px;
+        }
+        .nav-tabs button {
+            flex: 1;
+            background: rgba(30, 0, 0, 0.3);
+            border: 1px solid #552222;
+            border-radius: 20px;
+            padding: 10px 12px;
+            color: #aa8888;
+            font-weight: 600;
+            font-size: 0.75rem;
+            transition: 0.3s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 1px;
+        }
+        .nav-tabs button i {
+            font-size: 1rem;
+            color: #884444;
+            transition: 0.3s;
+        }
+        .nav-tabs button:hover {
+            background: rgba(50, 10, 10, 0.5);
+            border-color: #882222;
+            color: #ffaaaa;
+        }
+        .nav-tabs button.active {
+            background: rgba(170, 34, 34, 0.3);
+            border-color: #ff4444;
+            color: #ff8888;
+            box-shadow: 0 0 30px #ff222244;
+        }
+        .nav-tabs button.active i {
+            color: #ff6666;
+            text-shadow: 0 0 20px #ff4444;
+        }
 
-    .login-card p {
-      color: #b0b0b0;
-      margin-bottom: 2rem;
-      font-style: italic;
-    }
+        /* ===== TAB CONTENT ===== */
+        .tab-content {
+            display: none;
+            animation: fadeSlideUp 0.4s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
 
-    .key-input-group {
-      position: relative;
-      margin: 25px 0;
-    }
+        /* ===== MENU ===== */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin: 6px 0 4px;
+        }
+        .menu-grid button {
+            background: rgba(30, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid #662222;
+            border-radius: 20px;
+            padding: 14px 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #f0d0d0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        .menu-grid button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,50,50,0.1), rgba(150,0,200,0.05));
+            opacity: 0;
+            transition: 0.3s;
+        }
+        .menu-grid button:hover::before { opacity: 1; }
+        .menu-grid button i {
+            font-size: 1.3rem;
+            color: #ff6666;
+            transition: 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+        .menu-grid button span {
+            position: relative;
+            z-index: 1;
+        }
+        .menu-grid button:hover {
+            border-color: #ff5555;
+            transform: translateY(-2px) scale(0.97);
+            box-shadow: 0 0 50px #ff333355, inset 0 0 30px rgba(255,50,50,0.1);
+        }
+        .menu-grid button:hover i {
+            color: #ff88aa;
+            text-shadow: 0 0 30px #ff44aa, 0 0 60px #aa22ff;
+            transform: scale(1.1);
+        }
+        .menu-grid button:active { transform: scale(0.93); }
 
-    .key-input-group input {
-      width: 100%;
-      padding: 1rem 1.2rem;
-      background: #1a0000;
-      border: 2px solid #5a0000;
-      border-radius: 50px;
-      color: white;
-      font-size: 1.1rem;
-      outline: none;
-      transition: 0.3s;
-      text-align: center;
-      letter-spacing: 2px;
-    }
+        /* ===== TERMINAL ===== */
+        .terminal-wrapper {
+            position: relative;
+            margin-top: 4px;
+        }
+        .terminal-wrapper::before {
+            content: '▼ TERMINAL';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: #0b0b0b;
+            padding: 0 12px;
+            font-size: 0.6rem;
+            color: #55ff8866;
+            letter-spacing: 3px;
+            font-weight: 700;
+        }
+        .terminal {
+            background: rgba(12, 12, 12, 0.95);
+            border: 1px solid #22aa4488;
+            border-radius: 20px;
+            padding: 18px 16px;
+            max-height: 180px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #55ff88;
+            box-shadow: inset 0 0 40px #00330033, 0 0 30px #00aa0033, 0 0 60px #00aa0011;
+            scroll-behavior: smooth;
+            line-height: 1.7;
+            backdrop-filter: blur(4px);
+        }
+        .terminal::-webkit-scrollbar { width: 4px; }
+        .terminal::-webkit-scrollbar-track { background: #0a0a0a; border-radius: 10px; }
+        .terminal::-webkit-scrollbar-thumb { background: #22aa44; border-radius: 10px; box-shadow: 0 0 20px #55ff88; }
+        .terminal-line {
+            opacity: 0;
+            animation: typeIn 0.25s forwards;
+        }
+        @keyframes typeIn {
+            0% { opacity: 0; transform: translateX(-8px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        .terminal .highlight {
+            color: #ffdd44;
+            text-shadow: 0 0 20px #ffaa00;
+        }
+        .terminal .error {
+            color: #ff4444;
+            text-shadow: 0 0 20px #ff0000;
+        }
+        .terminal .success {
+            color: #44ff88;
+            text-shadow: 0 0 20px #00ff66;
+        }
 
-    .key-input-group input:focus {
-      border-color: #ff3131;
-      box-shadow: 0 0 25px #ff0000aa;
-      background: #250000;
-    }
-        .btn-login {
-      background: linear-gradient(135deg, #b30000, #ff1a1a);
-      border: none;
-      padding: 1rem 2.5rem;
-      border-radius: 50px;
-      color: white;
-      font-weight: bold;
-      font-size: 1.2rem;
-      letter-spacing: 2px;
-      cursor: pointer;
-      width: 100%;
-      transition: 0.3s;
-      box-shadow: 0 10px 25px rgba(255, 0, 0, 0.5);
-      text-transform: uppercase;
-      margin-top: 10px;
-    }
+/* ===== ADMIN PANEL ===== */
+        #admin-panel {
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 4px;
+            padding: 18px 14px;
+            background: rgba(60, 0, 0, 0.2);
+            border-radius: 28px;
+            border: 1px solid rgba(170, 58, 58, 0.3);
+            backdrop-filter: blur(8px);
+            animation: fadeSlideUp 0.5s ease;
+        }
+        .admin-panel-title {
+            font-weight: 700;
+            color: #ff8888;
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,50,50,0.15);
+            padding-bottom: 10px;
+        }
+        .admin-panel-title i {
+            color: #ffaa44;
+            font-size: 1.1rem;
+        }
+        .admin-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .admin-row input, .admin-row select {
+            flex: 1;
+            min-width: 100px;
+            background: rgba(26, 10, 10, 0.8);
+            border: 1px solid #992222;
+            border-radius: 40px;
+            padding: 10px 16px;
+            color: #f0d0d0;
+            font-size: 0.8rem;
+            transition: 0.3s;
+            backdrop-filter: blur(4px);
+        }
+        .admin-row input:focus {
+            border-color: #ff5555;
+            box-shadow: 0 0 20px #ff222244;
+            outline: none;
+        }
+        .admin-row button {
+            background: rgba(122, 26, 26, 0.8);
+            border: 1px solid #992222;
+            border-radius: 40px;
+            padding: 10px 16px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 0 20px #aa222255;
+            transition: 0.3s;
+            cursor: pointer;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(4px);
+        }
+        .admin-row button i { color: #ff8888; transition: 0.3s; }
+        .admin-row button:hover {
+            background: #bb2222;
+            border-color: #ff5555;
+            box-shadow: 0 0 40px #ff3333, 0 0 80px #ff333344;
+            transform: scale(1.02);
+        }
+        .admin-row button:hover i { color: #ffaaaa; text-shadow: 0 0 20px #ff4444; }
+        .admin-row button:active { transform: scale(0.95); }
+        .key-list {
+            background: rgba(13, 5, 5, 0.8);
+            border-radius: 20px;
+            padding: 10px 14px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.7rem;
+            color: #ddaaaa;
+            border: 1px solid #662222;
+            backdrop-filter: blur(4px);
+        }
+        .key-list::-webkit-scrollbar { width: 3px; }
+        .key-list::-webkit-scrollbar-thumb { background: #882222; border-radius: 10px; }
+        .key-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #331111;
+            transition: 0.2s;
+        }
+        .key-item:hover { background: rgba(255,50,50,0.05); }
+        .key-item .key-code {
+            color: #ff8888;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: monospace;
+        }
+        .key-item .key-code:hover {
+            color: #ff3333;
+            text-shadow: 0 0 30px #ff4444;
+            transform: scale(1.02);
+        }
+        .key-item .copy-hint {
+            font-size: 0.55rem;
+            color: #665555;
+            margin-left: 6px;
+        }
+        .key-item .key-status {
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+        }
+        .key-item .key-status.active { color: #55ff88; }
+        .key-item .key-status.inactive { color: #ff5555; }
 
-    .btn-login:hover {
-      background: linear-gradient(135deg, #ff1a1a, #ff4d4d);
-      box-shadow: 0 15px 35px #ff0000cc;
-      transform: translateY(-2px);
-    }
+        /* ===== INFO BADGE ===== */
+        .info-badge {
+            font-size: 0.6rem;
+            color: #aa8888;
+            text-align: center;
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px dashed #553333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.02);
+        }
+        .info-badge i { color: #ff6666; }
 
-    .error-message {
-      color: #ff5e5e;
-      margin-top: 1rem;
-      font-weight: 500;
-      display: none;
-      background: rgba(255,0,0,0.15);
-      padding: 8px 15px;
-      border-radius: 20px;
-    }
-
-    /* ========== PANEL CHÍNH ========== */
-    .panel-layout {
-      display: flex;
-      border-radius: 28px;
-      overflow: hidden;
-      background: rgba(12, 0, 0, 0.7);
-      backdrop-filter: blur(25px);
-      border: 1px solid rgba(255, 80, 80, 0.25);
-      box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      width: 270px;
-      background: rgba(20, 0, 0, 0.8);
-      padding: 2rem 1rem;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #5a1a1a;
-    }
-
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding-bottom: 2rem;
-      border-bottom: 1px solid #4a1010;
-      margin-bottom: 1.5rem;
-    }
-
-    .sidebar-header i {
-      font-size: 2.2rem;
-      color: #ff3a3a;
-    }
-
-    .sidebar-header span {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 1px;
-    }
-
-    .nav-menu {
-      list-style: none;
-      flex: 1;
-    }
-
-    .nav-item {
-      padding: 0.9rem 1.2rem;
-      margin-bottom: 0.5rem;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 500;
-      transition: 0.2s;
-      color: #ccc;
-    }
-
-    .nav-item i {
-      width: 22px;
-      font-size: 1.2rem;
-    }
-
-    .nav-item:hover {
-      background: #3a0000;
-      color: white;
-    }
-
-    .nav-item.active {
-      background: #b30000;
-      color: white;
-      box-shadow: 0 8px 20px rgba(200,0,0,0.5);
-    }
-
-    .logout-btn {
-      margin-top: auto;
-      background: transparent;
-      border: 1px solid #ff4d4d;
-      color: #ff4d4d;
-      padding: 0.8rem;
-      border-radius: 30px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .logout-btn:hover {
-      background: #ff4d4d;
-      color: black;
-    }
-
-    /* MAIN CONTENT */
-    .main-content {
-      flex: 1;
-      padding: 2rem;
-      background: rgba(0, 0, 0, 0.3);
-    }
-
-    .dashboard-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .stat-card {
-      background: rgba(30, 0, 0, 0.7);
-      border: 1px solid #b33b3b;
-      border-radius: 20px;
-      padding: 1.3rem;
-      backdrop-filter: blur(10px);
-      transition: 0.3s;
-    }
-
-    .stat-card:hover {
-      transform: translateY(-5px);
-      border-color: #ff4d4d;
-      box-shadow: 0 15px 30px rgba(255,0,0,0.3);
-    }
-
-    .card-title {
-      font-size: 0.9rem;
-      color: #aaaaaa;
-      margin-bottom: 0.6rem;
-    }
-
-    .card-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #ff5e5e;
-    }
-
-    .optimize-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }.optimize-item {
-      background: rgba(18, 0, 0, 0.8);
-      border: 1px solid #6b1a1a;
-      border-radius: 18px;
-      padding: 1.5rem;
-      transition: 0.3s;
-    }
-
-    .optimize-item:hover {
-      border-color: #ff2a2a;
-    }
-
-    .item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-
-    .item-header i {
-      font-size: 1.6rem;
-      color: #ff5e5e;
-    }
-
-    .toggle-switch {
-      position: relative;
-      width: 52px;
-      height: 28px;
-      display: inline-block;
-    }
-
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #3a0000;
-      transition: .3s;
-      border-radius: 34px;
-      border: 1px solid #a53f3f;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 22px;
-      width: 22px;
-      left: 2px;
-      bottom: 2px;
-      background-color: white;
-      transition: .3s;
-      border-radius: 50%;
-    }
-
-    input:checked + .slider {
-      background-color: #ff1a1a;
-      box-shadow: 0 0 15px #ff0000;
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(24px);
-    }
-
-    .range-slider {
-      width: 100%;
-      margin: 12px 0;
-      accent-color: #ff3131;
-      background: #2c0000;
-      height: 6px;
-      border-radius: 5px;
-    }
-
-    .status-badge {
-      font-size: 0.8rem;
-      background: #2a0000;
-      padding: 4px 12px;
-      border-radius: 20px;
-      color: #ffaaaa;
-    }
-
-    .btn-auto {
-      background: #b30000;
-      border: none;
-      color: white;
-      padding: 0.9rem 2rem;
-      border-radius: 40px;
-      font-weight: bold;
-      margin-top: 1.5rem;
-      cursor: pointer;
-      transition: 0.3s;
-      width: 100%;
-      letter-spacing: 1px;
-    }
-    .btn-auto:hover {
-      background: #ff2626;
-      box-shadow: 0 0 30px red;
-    }
-
-    /* ADMIN PAGE */
-    .admin-section {
-      display: none;
-    }
-
-    .admin-section.active {
-      display: block;
-    }
-
-    .key-generator {
-      background: #1a0000;
-      padding: 1.8rem;
-      border-radius: 20px;
-      margin-bottom: 2rem;
-    }
-
-    .key-list {
-      background: #140000;
-      border-radius: 16px;
-      padding: 1rem;
-      max-height: 350px;
-      overflow-y: auto;
-    }
-
-    .key-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.8rem;
-      border-bottom: 1px solid #4a2020;
-    }
-
-    @media (max-width: 768px) {
-      .panel-layout {
-        flex-direction: column;
+        /* ===== TOAST ===== */
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 5, 5, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 14px 32px;
+            border-radius: 60px;
+            border: 1px solid #ff5555;
+            color: #ffb0b0;
+            font-weight: 500;
+            font-size: 0.9rem;
+            z-index: 999;
+            box-shadow: 0 0 60px #ff222244, inset 0 0 30px rgba(255,0,0,0.05);
+            transition: opacity 0.4s, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            pointer-events: none;
+            white-space: nowrap;
+            transform: translateX(-50%) translateY(30px) scale(0.95);
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
       }
-      .sidebar {
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-      }
-    }
-  </style>
+      /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .glass-card { padding: 20px 14px; border-radius: 32px; max-width: 100%; }
+            .menu-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+            .menu-grid button { font-size: 0.6rem; padding: 10px 4px; border-radius: 16px; }
+            .menu-grid button i { font-size: 1rem; }
+            .dash-header .left .user-name { font-size: 1rem; }
+            .admin-row input { min-width: 60px; font-size: 0.7rem; }
+            .uchiha-logo h1 { font-size: 2rem; letter-spacing: 4px; }
+            .uchiha-logo svg { width: 60px; height: 60px; }
+            .nav-tabs button { font-size: 0.65rem; padding: 8px 6px; }
+            .nav-tabs button i { font-size: 0.8rem; }
+        }
+        @media (max-width: 380px) {
+            .menu-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+        }
+    </style>
 </head>
 <body>
-<div class="uchiha-bg"></div>
-<div class="sharingan-pattern"></div>
-
-<!-- LOGIN VIEW -->
-<div id="loginView" class="login-container">
-  <div class="login-card">
-    <div class="uchiha-logo">
-      <i class="fas fa-fire"></i>
-      <i class="fas fa-eye" style="color:#ff4d4d;"></i>
-    </div>
-    <h2>UCHIHA PANEL V2</h2>
-    <p>「 うちは 」· Nhập Key để thức tỉnh Sharingan</p>
-    <div class="key-input-group">
-      <input type="text" id="keyInput" placeholder="Nhập Key..." autocomplete="off">
-    </div>
-    <button class="btn-login" id="loginBtn"><i class="fas fa-sign-in-alt"></i> KÍCH HOẠT</button>
-    <div id="loginError" class="error-message"></div>
-    <p style="margin-top:1.2rem; font-size:0.8rem; color:#777;">Key Admin NGUYEN HOANG CẤP</p>
-  </div>
-</div>
-
-<!-- PANEL CHÍNH -->
-<div id="panelView" class="panel-layout" style="display: none;">
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <i class="fas fa-skull"></i>
-      <span>UCHIHA</span>
-    </div>
-    <ul class="nav-menu">
-      <li class="nav-item active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</li>
-      <li class="nav-item" data-page="optimize"><i class="fas fa-cogs"></i> Tối ưu</li>
-      <li class="nav-item" id="adminNavItem" data-page="admin" style="display: none;"><i class="fas fa-user-shield"></i> Admin Key</li>
-    </ul>
-    <button class="logout-btn" id="logoutBtn"><i class="fas fa-power-off"></i> Đăng xuất</button>
-  </div>
-
-  <!-- MAIN -->
-  <div class="main-content">
-    <!-- DASHBOARD PAGE -->
-    <div id="dashboardPage" class="page active">
-      <h2 style="margin-bottom:1.5rem;"><i class="fas fa-chart-line"></i> Tổng quan</h2>
-      <div class="dashboard-cards">
-        <div class="stat-card"><div class="card-title">FPS Hiện tại</div><div class="card-value" id="fpsValue">144</div></div>
-        <div class="stat-card"><div class="card-title">Trạng thái</div><div class="card-value" style="color:#4caf50;">ACTIVE</div></div>
-        <div class="stat-card"><div class="card-title">Key</div><div class="card-value" id="keyDisplay" style="font-size:1.2rem;">---</div></div>
-      </div>
-    </div>
-    <!-- OPTIMIZE PAGE -->
-    <div id="optimizePage" class="page" style="display: none;">
-      <h2 style="margin-bottom:1.5rem;"><i class="fas fa-sliders-h"></i> Bộ tối ưu</h2>
-      <div class="optimize-grid" id="optimizeContainer"></div>
-      <button class="btn-auto" id="autoOptimizeBtn"><i class="fas fa-magic"></i> AUTO OPTIMIZE</button>
+<!-- ===== LOADING ===== -->
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p>UCHIHA INIT</p>
     </div>
 
-    <!-- ADMIN PAGE (chỉ admin thấy) -->
-    <div id="adminPage" class="page admin-section" style="display: none;">
-      <h2><i class="fas fa-key"></i> Quản lý Key</h2>
-      <div class="key-generator">
-        <input type="text" id="newKeyInput" placeholder="Key (để trống tự sinh)" style="padding:0.7rem; width:60%; background:#2a0000; border:1px solid #b33b3b; color:white; border-radius:8px;">
-        <select id="expireSelect" style="padding:0.7rem; background:#2a0000; color:white; border:1px solid #b33b3b; border-radius:8px; margin-left:10px;">
-          <option value="7">7 ngày</option>
-          <option value="30">30 ngày</option>
-          <option value="1">1 ngày (test)</option>
-        </select>
-        <button id="generateKeyBtn" style="margin-left:10px; background:#b30000; border:none; color:white; padding:0.7rem 1.5rem; border-radius:8px;"><i class="fas fa-plus"></i> Tạo Key</button>
-      </div>
-      <div class="key-list" id="keyListContainer"></div>
+    <!-- ===== NỀN CANVAS ===== -->
+    <canvas id="background-canvas"></canvas>
+
+    <!-- ===== TOAST ===== -->
+    <div id="toast"></div>
+
+    <!-- ===== MAIN CARD ===== -->
+    <div class="glass-card" id="app">
+
+        <!-- LOGO -->
+        <div class="uchiha-logo">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="46" stroke="#ff2222" stroke-width="3" fill="#0a0000" />
+                <circle cx="50" cy="50" r="30" stroke="#cc1111" stroke-width="2" />
+                <circle cx="50" cy="50" r="14" fill="#cc1111" />
+                <path d="M50 10 L50 90 M10 50 L90 50 M20 20 L80 80 M80 20 L20 80" stroke="#ff3333" stroke-width="2" opacity="0.6" />
+                <circle cx="50" cy="50" r="4" fill="#ff6666" />
+                <path d="M30 35 Q50 20 70 35 Q75 50 70 65 Q50 80 30 65 Q25 50 30 35" stroke="#ff4444" stroke-width="2.5" fill="none" />
+                <circle cx="50" cy="50" r="50" stroke="#ff222244" stroke-width="1" stroke-dasharray="6 6" />
+            </svg>
+            <h1>UCHIHA</h1>
+            <div class="subtitle">Clan of the Sharingan</div>
+        </div>
+
+        <!-- ===== LOGIN ===== -->
+        <div id="login-area">
+            <input type="text" id="key-input" placeholder="🔑 Nhập Key" autocomplete="off">
+            <button id="login-btn"><i class="fas fa-key" style="margin-right:12px;"></i> Đăng nhập</button>
+            <div id="login-error"></div>
+        </div>
+
+        <!-- ===== DASHBOARD ===== -->
+        <div id="dashboard">
+            <!-- HEADER -->
+            <div class="dash-header">
+                <div class="left">
+                    <svg viewBox="0 0 40 40" width="40" height="40">
+                        <circle cx="20" cy="20" r="18" stroke="#ff2222" stroke-width="2" fill="#0a0000" />
+                        <circle cx="20" cy="20" r="10" stroke="#cc1111" stroke-width="1.5" />
+                        <circle cx="20" cy="20" r="4" fill="#ff4444" />
+                        <path d="M12 14 Q20 8 28 14 Q30 20 28 26 Q20 32 12 26 Q10 20 12 14" stroke="#ff4444" stroke-width="1.8" />
+                    </svg>
+                    <div class="user-info">
+                        <span class="user-name" id="dash-username">
+                            <i class="fas fa-user-ninja"></i> Người dùng
+                        </span>
+                    </div>
+                </div>
+                <div class="right">
+                    <span class="role" id="dash-role">USER</span>
+                    <span class="time-glow" id="dash-time">--:--:--</span>
+                    <button class="sound-toggle" id="soundToggle"><i class="fas fa-volume-up"></i></button>
+                </div>
+            </div>
+
+            <!-- NAV TABS -->
+            <div class="nav-tabs" id="navTabs">
+                <button class="active" data-tab="functions"><i class="fas fa-cogs"></i> Chức năng</button>
+                <button data-tab="admin" id="adminTabBtn"><i class="fas fa-crown"></i> Admin</button>
+            </div>
+
+            <!-- TAB: Chức năng -->
+            <div class="tab-content active" id="tab-functions">
+                <!-- MENU với icon mới -->
+                <div class="menu-grid" id="menu-grid">
+                    <button data-action="boost"><i class="fas fa-bolt"></i><span>Boost CPU</span></button>
+                    <button data-action="clean"><i class="fas fa-broom"></i><span>Dọn rác</span></button>
+                    <button data-action="game"><i class="fas fa-gamepad"></i><span>Game Mode</span></button>
+                    <button data-action="touch"><i class="fas fa-hand-pointer"></i><span>Touch Calib</span></button>
+                    <button data-action="ff"><i class="fas fa-crosshairs"></i><span>Free Fire Pro</span></button>
+                    <button data-action="ping"><i class="fas fa-wifi"></i><span>Ping Boost</span></button>
+                    <button data-action="screen"><i class="fas fa-tv"></i><span>Buff Màn</span></button>
+                    <button data-action="sysinfo"><i class="fas fa-chart-pie"></i><span>System Stats</span></button>
+                    <button data-action="about"><i class="fas fa-shield-alt"></i><span>About</span></button>
+                </div>
+            </div>
+
+            <!-- TAB: Admin -->
+            <div class="tab-content" id="tab-admin">
+                <div id="admin-panel" style="display:flex;">
+                    <div class="admin-panel-title">
+                        <i class="fas fa-crown"></i> QUẢN LÝ KEY
+                    </div>
+                    
+                    <div class="info-badge">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Click vào key để copy & chia sẻ</span>
+                    </div>
+
+                    <!-- Tạo Key -->
+                    <div class="admin-row">
+                        <input type="text" id="key-name-input" placeholder="Tên key" style="flex:1.5;">
+                        <input type="date" id="key-expiry-input" style="flex:1;">
+                        <button id="create-key-btn"><i class="fas fa-plus-circle"></i> Tạo</button>
+                    </div>
+                    
+                    <!-- Danh sách key -->
+                    <div class="key-list" id="key-list-container">
+                        <div style="color:#887777; text-align:center; padding:8px;">Chưa có key nào</div>
+                    </div>
+
+                    <!-- Quản lý key -->
+                    <div class="admin-row">
+                        <input type="text" id="manage-key-input" placeholder="Nhập key để quản lý">
+                        <button id="delete-key-btn"><i class="fas fa-trash-alt"></i></button>
+                        <button id="extend-key-btn"><i class="fas fa-hourglass-half"></i></button>
+                        <button id="lock-key-btn"><i class="fas fa-lock"></i></button>
+                        <button id="unlock-key-btn"><i class="fas fa-lock-open"></i></button>
+                    </div>
+
+                    <!-- Thông báo admin -->
+                    <div class="admin-row">
+                        <input type="text" id="admin-notice-input" placeholder="📢 Thông báo" style="flex:2;">
+                        <button id="send-notice-btn"><i class="fas fa-bullhorn"></i> Gửi</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TERMINAL (hiển thị ở cả 2 tab) -->
+            <div class="terminal-wrapper">
+                <div class="terminal" id="terminal">
+                    <div class="terminal-line">> Uchiha Terminal v3.0</div>
+                    <div class="terminal-line">> Nhấn một chức năng để bắt đầu...</div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<script>
-  (function() {
-    // ---------- CONST ----------
-    const ADMIN_KEY = "nhoang123";
-    const STORAGE_KEYS = "uchiha_keys_v2";
-    const STORAGE_CURRENT = "uchiha_current_key";
+    <script>
+        (function(){
+            "use strict";
 
-    // Cấu hình tính năng tối ưu
-    const optimizeFeatures = [
-      { id: "fixLag", name: "Fix Lag / Tối ưu FPS", icon: "fa-bolt" },
-      { id: "pointSpeed", name: "Tăng Point Speed", icon: "fa-mouse-pointer" },
-      { id: "sensitivity", name: "Tăng Sensitivity", icon: "fa-arrow-pointer" },
-      { id: "inputLag", name: "Giảm Input Lag", icon: "fa-keyboard" },
-      { id: "ramCpu", name: "Tối ưu RAM & CPU", icon: "fa-microchip" },
-      { id: "clearCache", name: "Clear Cache", icon: "fa-broom" },
-      { id: "boostGame", name: "Boost Game Performance", icon: "fa-gamepad" }
-    ];
+            // ========== BIẾN ==========
+            const KEY_STORAGE = 'uchiha_keys';
+            const NOTICE_STORAGE = 'uchiha_notices';
+            const ADMIN_KEY = 'nhoang123';
 
-    // State
-    let currentUserKey = "";
-    let isAdmin = false;
+            let currentUser = null;
+            let soundEnabled = true;
 
-    // DOM
-    const loginView = document.getElementById("loginView");
-    const panelView = document.getElementById("panelView");
-    const loginBtn = document.getElementById("loginBtn");
-    const keyInput = document.getElementById("keyInput");
-    const loginError = document.getElementById("loginError");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const adminNavItem = document.getElementById("adminNavItem");
-    const navItems = document.querySelectorAll(".nav-item");
-    const pages = {
-      dashboard: document.getElementById("dashboardPage"),
-      optimize: document.getElementById("optimizePage"),
-      admin: document.getElementById("adminPage")
-    };
-    const keyDisplay = document.getElementById("keyDisplay");
-    const fpsValue = document.getElementById("fpsValue");
+            // DOM
+            const loading = document.getElementById('loading-screen');
+            const loginArea = document.getElementById('login-area');
+            const dashboard = document.getElementById('dashboard');
+            const keyInput = document.getElementById('key-input');
+            const loginBtn = document.getElementById('login-btn');
+            const loginError = document.getElementById('login-error');
+            const dashUsername = document.getElementById('dash-username');
+            const dashRole = document.getElementById('dash-role');
+            const dashTime = document.getElementById('dash-time');
+            const terminal = document.getElementById('terminal');
+            const adminPanel = document.getElementById('admin-panel');
+            const keyListContainer = document.getElementById('key-list-container');
+            const soundToggle = document.getElementById('soundToggle');
+            const adminTabBtn = document.getElementById('adminTabBtn');
 
-    // ========== HÀM QUẢN LÝ KEY ==========
-    function getKeysFromStorage() {
-      const data = localStorage.getItem(STORAGE_KEYS);
-      return data ? JSON.parse(data) : [];
-    }
+            // ========== LOADING ==========
+            window.addEventListener('load', ()=>{
+                setTimeout(() => loading.classList.add('hide'), 500);
+            });
 
-    function saveKeysToStorage(keys) {
-      localStorage.setItem(STORAGE_KEYS, JSON.stringify(keys));
-    }
-        // Tạo key admin mặc định nếu chưa có
-    function initDefaultKeys() {
-      let keys = getKeysFromStorage();
-      if (!keys.find(k => k.key === ADMIN_KEY)) {
-        keys.push({
-          key: ADMIN_KEY,
-          expiredate: "2099-12-31", // vĩnh viễn
-          status: "Active",
-          created: new Date().toISOString()
-        });
-        saveKeysToStorage(keys);
-      }
-    }
+            // ========== LOCALSTORAGE ==========
+            function getKeys() {
+                try { return JSON.parse(localStorage.getItem(KEY_STORAGE)) || []; } catch(e) { return []; }
+            }
+            function saveKeys(keys) {
+                localStorage.setItem(KEY_STORAGE, JSON.stringify(keys));
+            }
+            function getNotices() {
+                try { return JSON.parse(localStorage.getItem(NOTICE_STORAGE)) || []; } catch(e) { return []; }
+            }
+            function saveNotices(notices) {
+                localStorage.setItem(NOTICE_STORAGE, JSON.stringify(notices));
+            }
 
-    // Kiểm tra key hợp lệ
-    function validateKey(inputKey) {
-      const keys = getKeysFromStorage();
-      const found = keys.find(k => k.key === inputKey);
-      if (!found) return { valid: false, reason: "Key không tồn tại." };
-      if (found.status === "Expired" || new Date(found.expiredate) < new Date()) {
-        // tự động update status nếu hết hạn
-        if (found.status !== "Expired") {
-          found.status = "Expired";
-          saveKeysToStorage(keys);
-        }
-        return { valid: false, reason: "Key đã hết hạn." };
-      }
-      return { valid: true, keyData: found };
-    }
-        // Đăng nhập
-    function login(key) {
-      const result = validateKey(key);
-      if (!result.valid) {
-        loginError.style.display = "block";
-        loginError.textContent = result.reason;
-        return;
-      }
-      currentUserKey = key;
-      isAdmin = (key === ADMIN_KEY);
-      localStorage.setItem(STORAGE_CURRENT, key);
-      showPanel();
-    }
+            // ========== TOAST ==========
+            function showToast(msg, dur=2800) {
+                const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.classList.add('show');
+                clearTimeout(t._hide);
+                t._hide = setTimeout(() => t.classList.remove('show'), dur);
+            }
 
-    function logout() {
-      currentUserKey = "";
-      isAdmin = false;
-      localStorage.removeItem(STORAGE_CURRENT);
-      loginView.style.display = "flex";
-      panelView.style.display = "none";
-      keyInput.value = "";
-      loginError.style.display = "none";
-    }
+            // ========== COPY TO CLIPBOARD ==========
+            function copyToClipboard(text) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast('✅ Đã copy: ' + text);
+                    }).catch(() => {
+                        fallbackCopy(text);
+                    });
+                } else {
+                    fallbackCopy(text);
+                }
+            }
+            function fallbackCopy(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('✅ Đã copy: ' + text);
+                } catch(e) {
+                    showToast('❌ Không thể copy, hãy copy thủ công');
+                }
+                document.body.removeChild(textarea);
+            }
 
-    function showPanel() {
-      loginView.style.display = "none";
-      panelView.style.display = "flex";
-      keyDisplay.textContent = currentUserKey;
-      if (isAdmin) {
-        adminNavItem.style.display = "flex";
-      } else {
-        adminNavItem.style.display = "none";
-      }
-      // Mặc định active dashboard
-      switchPage("dashboard");
-      renderOptimizeFeatures();
-      if (isAdmin) renderKeyList();
-      // Random FPS
-      fpsValue.textContent = Math.floor(Math.random() * 60 + 120);
-    }
+            // ========== ÂM THANH ==========
+            function playClick() {
+                if (!soundEnabled) return;
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = 800;
+                    osc.type = 'sine';
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.1);
+                } catch(e) {}
+            }
+            soundToggle.addEventListener('click', ()=>{
+                soundEnabled = !soundEnabled;
+                soundToggle.innerHTML = soundEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+                showToast(soundEnabled ? 'Âm thanh bật' : 'Âm thanh tắt');
+            });
+              // ========== TERMINAL ==========
+            function writeTerminal(lines, append=true) {
+                if (!append) terminal.innerHTML = '';
+                if (typeof lines === 'string') lines = [lines];
+                lines.forEach(line => {
+                    const div = document.createElement('div');
+                    div.className = 'terminal-line';
+                    div.textContent = '> ' + line;
+                    terminal.appendChild(div);
+                });
+                terminal.scrollTop = terminal.scrollHeight;
+            }
 
-    // Chuyển trang
-    function switchPage(pageName) {
-      Object.values(pages).forEach(p => p.style.display = "none");
-      if (pages[pageName]) pages[pageName].style.display = "block";
-      navItems.forEach(item => {
-        if (item.dataset.page === pageName) item.classList.add("active");
-        else item.classList.remove("active");
-      });
-    }
+            function terminalAction(action) {
+                playClick();
+                const msgs = {
+                    'boost': ['⚡ Boost CPU...', '🚀 Tăng xung nhịt 15%', '✅ Hoàn tất.'],
+                    'clean': ['🧹 Quét rác hệ thống...', '💾 Giải phóng 2.3GB', '✅ Done.'],
+                    'game': ['🎮 Kích hoạt Game Mode...', '⚡ Tối ưu FPS', '✅ Sẵn sàng chiến đấu.'],
+                    'touch': ['👆 Calibrate cảm ứng...', '🎯 Độ nhạy tối ưu', '✅ Done.'],
+                    'ff': ['🔥 Tối ưu Free Fire...', '🎯 Giảm độ trễ 20ms', '⚡ Headshot dễ dàng hơn', '✅ Sẵn sàng!'],
+                    'ping': ['📡 Tối ưu mạng...', '⚡ Giảm ping 25ms', '✅ Done.'],
+                    'screen': ['🖥️ Tăng tần số quét màn hình...', '⚡ 90Hz → 120Hz', '🌙 Màu sắc rực rỡ hơn', '✅ Buff màn hoàn tất.'],
+                    'sysinfo': ['📊 Thống kê hệ thống...', '📈 RAM: 6.2GB/8GB | CPU: 34%', '🌡️ Nhiệt độ: 42°C', '✅ Ổn định.'],
+                    'about': ['🦊 Uchiha Clan • v3.0', '👁️ Mangekyou Sharingan', '© 2026 Uchiha']
+                };
+                const lines = msgs[action] || ['⏳ Thực thi...', '✅ Hoàn thành.'];
+                writeTerminal(['']);
+                lines.forEach((l, i) => {
+                    setTimeout(() => { writeTerminal([l]); }, i * 200);
+                });
+                const notices = getNotices();
+                if (notices.length) {
+                    setTimeout(() => {
+                        const last = notices[notices.length-1];
+                        writeTerminal([`📢 ${last.msg} (${last.time})`]);
+                    }, lines.length * 200 + 300);
+                }
+                          // ===== MENU =====
+            document.querySelectorAll('[data-action]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    terminalAction(this.dataset.action);
+                });
+            });
 
-    // ========== TỐI ƯU FEATURES ==========
-    function renderOptimizeFeatures() {
-      const container = document.getElementById("optimizeContainer");
-      if (!container) return;
-      container.innerHTML = "";
-      optimizeFeatures.forEach(feat => {
-        const saved = localStorage.getItem(`uchiha_opt_${feat.id}`);
-        const checked = saved === "true" ? "checked" : "";
-        const percent = localStorage.getItem(`uchiha_opt_${feat.id}_val`) || 75;
-        const div = document.createElement("div");
-        div.className = "optimize-item";
-        div.innerHTML = `
-          <div class="item-header">
-            <i class="fas ${feat.icon}"></i>
-            <label class="toggle-switch">
-              <input type="checkbox" class="opt-toggle" data-id="${feat.id}" ${checked}>
-              <span class="slider"></span>
-            </label>
-          </div>
-          <strong>${feat.name}</strong>
-          <input type="range" class="range-slider opt-range" data-id="${feat.id}" min="0" max="100" value="${percent}">
-          <div><span class="status-badge" id="status_${feat.id}">${checked ? 'ON' : 'OFF'} · ${percent}%</span></div>
-        `;
-        container.appendChild(div);
-      });
+            // ===== TABS =====
+            document.querySelectorAll('.nav-tabs button').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const tabId = this.dataset.tab;
+                    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                    document.getElementById('tab-' + tabId).classList.add('active');
+                    playClick();
+                });
+            });
+            // ===== CLOCK =====
+            function updateClock() {
+                const d = new Date();
+                dashTime.textContent = d.toLocaleTimeString('vi-VN');
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
 
-      // Gán sự kiện
-      document.querySelectorAll(".opt-toggle").forEach(toggle => {
-        toggle.addEventListener("change", function() {
-          const id = this.dataset.id;
-          localStorage.setItem(`uchiha_opt_${id}`, this.checked);
-          updateStatusBadge(id);
-        });
-      });
-      document.querySelectorAll(".opt-range").forEach(range => {
-        range.addEventListener("input", function() {
-          const id = this.dataset.id;
-          localStorage.setItem(`uchiha_opt_${id}_val`, this.value);
-          updateStatusBadge(id);
-        });
-      });
-    }
+            // ===== LOGIN =====
+            function doLogin(key) {
+                const keys = getKeys();
+                let found = keys.find(k => k.key === key && k.active !== false);
+                
+                if (key === ADMIN_KEY) {
+                    currentUser = { name: 'Admin', role: 'admin', key: key };
+                    showDashboard();
+                    return true;
+                }
+                
+                if (found) {
+                    if (found.expiry) {
+                        const now = new Date();
+                        const exp = new Date(found.expiry);
+                        if (exp < now) {
+                            loginError.textContent = '⛔ Key đã hết hạn.';
+                            keyInput.classList.add('shake');
+                            setTimeout(()=>keyInput.classList.remove('shake'),500);
+                            return false;
+                        }
+                    }
+                    currentUser = { name: found.name || 'User', role: 'user', key: key };
+                    showDashboard();
+                    return true;
+                }
+                
+                loginError.textContent = '❌ Key không hợp lệ. Vui lòng kiểm tra lại.';
+                keyInput.classList.add('shake');
+                setTimeout(()=>keyInput.classList.remove('shake'),500);
+                return false;
+            }
 
-    function updateStatusBadge(id) {
-      const toggle = document.querySelector(`.opt-toggle[data-id="${id}"]`);
-      const range = document.querySelector(`.opt-range[data-id="${id}"]`);
-      const badge = document.getElementById(`status_${id}`);
-      if (badge && toggle && range) {
-        badge.textContent = `${toggle.checked ? 'ON' : 'OFF'} · ${range.value}%`;
-      }
-    }
+            function showDashboard() {
+                loginArea.style.display = 'none';
+                dashboard.style.display = 'flex';
+                dashUsername.innerHTML = `<i class="fas fa-user-ninja"></i> ${currentUser.name}`;
+                dashRole.textContent = currentUser.role === 'admin' ? '⚡ ADMIN' : 'USER';
+                
+                if (currentUser.role === 'admin') {
+                    dashRole.classList.add('admin');
+                    adminTabBtn.style.display = 'flex';
+                    // Nếu đang ở tab functions, chuyển sang admin
+                    document.querySelector('.nav-tabs button[data-tab="admin"]').click();
+                    renderKeyList();
+                } else {
+                    dashRole.classList.remove('admin');
+                    adminTabBtn.style.display = 'none';
+                    // Chuyển về tab functions
+                    document.querySelector('.nav-tabs button[data-tab="functions"]').click();
+                }
+                
+                writeTerminal([`👋 Chào ${currentUser.name}`, '⚡ Sẵn sàng.']);
+                const notices = getNotices();
+                if (notices.length) {
+                    const last = notices[notices.length-1];
+                    writeTerminal([`📢 ${last.msg} (${last.time})`]);
+                }
+                showToast('✅ Đăng nhập thành công!', 2000);
+            }
 
-    document.getElementById("autoOptimizeBtn")?.addEventListener("click", () => {
-      document.querySelectorAll(".opt-toggle").forEach(t => {
-        t.checked = true;
-        localStorage.setItem(`uchiha_opt_${t.dataset.id}`, "true");
-      });
-      document.querySelectorAll(".opt-range").forEach(r => {
-        r.value = 95;
-        localStorage.setItem(`uchiha_opt_${r.dataset.id}_val`, "95");
-      });
-      optimizeFeatures.forEach(f => updateStatusBadge(f.id));
-      alert("🔥 AUTO OPTIMIZE: Tất cả đã được kích hoạt ở mức 95%");
-    });
+            loginBtn.addEventListener('click', function() {
+                const key = keyInput.value.trim();
+                if (!key) { loginError.textContent = 'Vui lòng nhập Key.'; return; }
+                doLogin(key);
+            });
+            keyInput.addEventListener('keydown', e => { if(e.key==='Enter') loginBtn.click(); });
 
-    // ========== ADMIN KEY ==========
-    function generateRandomKey() {
-      return 'uchiha-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-    }
+            // ===== LOGOUT =====
+            dashUsername.addEventListener('dblclick', function() {
+                if (confirm('Đăng xuất?')) {
+                    currentUser = null;
+                    loginArea.style.display = 'flex';
+                    dashboard.style.display = 'none';
+                    keyInput.value = '';
+                    loginError.textContent = '';
+                    showToast('Đã đăng xuất');
+                }
+            });
 
-    function renderKeyList() {
-      const container = document.getElementById("keyListContainer");
-      if (!container) return;
-      const keys = getKeysFromStorage();
-      container.innerHTML = keys.map(k => {
-        const expDate = new Date(k.expiredate);
-        const isExpired = expDate < new Date() || k.status === "Expired";
-        return `<div class="key-item">
-          <span><strong>${k.key}</strong> (Hết hạn: ${k.expiredate})</span>
-          <span style="color:${isExpired?'#ff4d4d':'#4caf50'}">${isExpired?'Expired':'Active'}</span>
-        </div>`;
-      }).join("");
-    }
+            // ===== ADMIN: TẠO KEY =====
+            document.getElementById('create-key-btn').addEventListener('click', function() {
+                if (currentUser?.role !== 'admin') return showToast('Quyền admin cần thiết');
+                playClick();
+                const name = document.getElementById('key-name-input').value.trim() || 'Key';
+                const expiry = document.getElementById('key-expiry-input').value;
+                const keys = getKeys();
+                const gen = () => {
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    let r = '';
+                    for(let i=0;i<4;i++) r += chars[Math.floor(Math.random()*chars.length)];
+                    return r;
+                };
+                const newKey = `UCHIHA-${gen()}-${gen()}`;
+                const entry = { 
+                    key: newKey, 
+                    name: name, 
+                    expiry: expiry || null, 
+                    active: true, 
+                    createdAt: new Date().toISOString() 
+                };
+                keys.push(entry);
+                saveKeys(keys);
+                renderKeyList();
+                showToast(`✅ Key tạo: ${newKey}`);
+                writeTerminal([`🔑 Key mới: ${newKey} (${name})`]);
+                document.getElementById('key-name-input').value = '';
+                document.getElementById('key-expiry-input').value = '';
+            });
 
-    document.getElementById("generateKeyBtn")?.addEventListener("click", () => {
-      if (!isAdmin) return;
-      let newKey = document.getElementById("newKeyInput").value.trim();
-      if (!newKey) newKey = generateRandomKey();
-      const days = parseInt(document.getElementById("expireSelect").value);
-      const expDate = new Date();
-      expDate.setDate(expDate.getDate() + days);
-      const keys = getKeysFromStorage();
-      if (keys.find(k => k.key === newKey)) {
-        alert("Key đã tồn tại!");
-        return;
-      }
-      keys.push({
-        key: newKey,
-        expiredate: expDate.toISOString().split('T')[0],
-        status: "Active",
-        created: new Date().toISOString()
-      });
-      saveKeysToStorage(keys);
-      renderKeyList();
-      document.getElementById("newKeyInput").value = "";
-      alert(`✅ Đã tạo key: ${newKey}`);
-    });
+            // ===== ADMIN: XÓA KEY =====
+            document.getElementById('delete-key-btn').addEventListener('click', function() {
+                if (currentUser?.role !== 'admin') return;
+                playClick();
+                const input = document.getElementById('manage-key-input').value.trim();
+                if (!input) return showToast('Nhập key cần xóa');
+                let keys = getKeys();
+                const filtered = keys.filter(k => k.key !== input);
+                if (filtered.length === keys.length) return showToast('Không tìm thấy key');
+                saveKeys(filtered);
+                renderKeyList();
+                showToast('🗑️ Đã xóa key');
+                document.getElementById('manage-key-input').value = '';
+            });
+               // ===== ADMIN: GIA HẠN =====
+            document.getElementById('extend-key-btn').addEventListener('click', function() {
+                if (currentUser?.role !== 'admin') return;
+                playClick();
+                const input = document.getElementById('manage-key-input').value.trim();
+                if (!input) return showToast('Nhập key cần gia hạn');
+                let keys = getKeys();
+                const found = keys.find(k => k.key === input);
+                if (!found) return showToast('Không tìm thấy');
+                const newExp = new Date();
+                newExp.setMonth(newExp.getMonth() + 1);
+                found.expiry = newExp.toISOString().split('T')[0];
+                saveKeys(keys);
+                renderKeyList();
+                showToast('⏳ Gia hạn 1 tháng');
+            });
 
-    // ========== EVENT LISTENERS ==========
-    loginBtn.addEventListener("click", () => {
-      const key = keyInput.value.trim();
-      if (!key) {
-        loginError.style.display = "block";
-        loginError.textContent = "Vui lòng nhập key.";
-        return;
-      }
-      login(key);
-    });
+            // ===== ADMIN: KHÓA / MỞ KHÓA =====
+            function toggleLock(locked) {
+                if (currentUser?.role !== 'admin') return;
+                playClick();
+                const input = document.getElementById('manage-key-input').value.trim();
+                if (!input) return showToast('Nhập key');
+                let keys = getKeys();
+                const found = keys.find(k => k.key === input);
+                if (!found) return showToast('Không tìm thấy');
+                found.active = locked ? false : true;
+                saveKeys(keys);
+                renderKeyList();
+                showToast(locked ? '🔒 Đã khóa' : '🔓 Đã mở khóa');
+            }
+            document.getElementById('lock-key-btn').addEventListener('click', ()=>toggleLock(true));
+            document.getElementById('unlock-key-btn').addEventListener('click', ()=>toggleLock(false));
 
-    keyInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") loginBtn.click();
-    });
+            // ===== RENDER KEY LIST =====
+            function renderKeyList() {
+                if (currentUser?.role !== 'admin') return;
+                const keys = getKeys();
+                if (!keys.length) {
+                    keyListContainer.innerHTML = '<div style="color:#887777; text-align:center; padding:8px;">Chưa có key nào</div>';
+                    return;
+                }
+                let html = '';
+                keys.forEach(k => {
+                    const status = k.active === false ? 'inactive' : 'active';
+                    const statusIcon = k.active === false ? '🔒' : '✅';
+                    const expiry = k.expiry ? `📅${k.expiry}` : '';
+                    html += `
+                        <div class="key-item">
+                            <span class="key-code" onclick="window.copyKey('${k.key}')">
+                                ${k.key} <span class="copy-hint">(click copy)</span>
+                            </span>
+                            <span>
+                                ${k.name || ''} ${expiry}
+                                <span class="key-status ${status}">${statusIcon}</span>
+                            </span>
+                        </div>
+                    `;
+                });
+                keyListContainer.innerHTML = html;
+            }
 
-    logoutBtn.addEventListener("click", logout);
+            // ===== GLOBAL COPY FUNCTION =====
+            window.copyKey = function(key) {
+                copyToClipboard(key);
+            };
 
-    navItems.forEach(item => {
-      item.addEventListener("click", (e) => {
-        const page = item.dataset.page;
-        if (page === "admin" && !isAdmin) {
-          alert("Chỉ admin mới truy cập.");
-          return;
-        }
-        switchPage(page);
-        if (page === "admin") renderKeyList();
-      });
-    });
+            // ===== ADMIN: GỬI THÔNG BÁO =====
+            document.getElementById('send-notice-btn').addEventListener('click', function() {
+                if (currentUser?.role !== 'admin') return;
+                playClick();
+                const msg = document.getElementById('admin-notice-input').value.trim();
+                if (!msg) return showToast('Nhập nội dung');
+                const notices = getNotices();
+                const time = new Date().toLocaleTimeString('vi-VN');
+                notices.push({ msg, time, timestamp: Date.now() });
+                saveNotices(notices);
+                document.getElementById('admin-notice-input').value = '';
+                showToast('📨 Đã gửi thông báo');
+                writeTerminal([`📢 ${msg} (${time})`]);
+            });
 
-    // Kiểm tra phiên đăng nhập trước đó
-    window.addEventListener("load", () => {
-      initDefaultKeys();
-      const savedKey = localStorage.getItem(STORAGE_CURRENT);
-      if (savedKey) {
-        const validation = validateKey(savedKey);
-        if (validation.valid) {
-          currentUserKey = savedKey;
-          isAdmin = (savedKey === ADMIN_KEY);
-          showPanel();
-        } else {
-          localStorage.removeItem(STORAGE_CURRENT);
-          logout();
-        }
-      } else {
-        loginView.style.display = "flex";
-      }
-    });
+            // ========== CANVAS NỀN ==========
+            const canvas = document.getElementById('background-canvas');
+            const ctx = canvas.getContext('2d');
+            let w, h;
+            function resizeCanvas() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
 
-  })();
-</script>
+            let particles = [];
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.size = 4 + Math.random() * 14;
+                    this.speedX = (Math.random() - 0.5) * 0.8;
+                    this.speedY = (Math.random() - 0.5) * 0.8 - 0.3;
+                    this.alpha = 0.3 + Math.random() * 0.6;
+                    this.life = 200 + Math.random() * 300;
+                    this.maxLife = this.life;
+                    this.color = `hsl(${0 + Math.random()*20}, 90%, ${50 + Math.random()*40}%)`;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.life--;
+                    this.alpha = this.life / this.maxLife * 0.8;
+                    if (this.life <= 0) this.reset();
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * (this.life/this.maxLife), 0, Math.PI*2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = '#ff4444';
+                    ctx.shadowBlur = 30;
+                    ctx.globalAlpha = this.alpha * 0.7;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+            for (let i=0; i<70; i++) particles.push(new Particle());
+
+            let angle = 0;
+            function drawSharingan(cx, cy, r, rot) {
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(rot);
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI*2);
+                ctx.strokeStyle = '#bb222288';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                for (let i=0; i<3; i++) {
+                    const a = i * Math.PI*2/3;
+                    ctx.save();
+                    ctx.rotate(a);
+                    ctx.beginPath();
+                    ctx.arc(r*0.6, 0, r*0.25, 0, Math.PI*2);
+                    ctx.fillStyle = '#cc1111aa';
+                    ctx.shadowColor = '#ff0000';
+                    ctx.shadowBlur = 40;
+                    ctx.fill();
+                    ctx.restore();
+                }
+                ctx.restore();
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, w, h);
+                const grad = ctx.createRadialGradient(w*0.3, h*0.2, 50, w*0.5, h*0.5, w*0.8);
+                grad.addColorStop(0, '#2a0808');
+                grad.addColorStop(0.5, '#140202');
+                grad.addColorStop(1, '#050000');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0,0,w,h);
+
+                particles.forEach(p => { p.update(); p.draw(); });
+                const sSize = Math.min(w,h)*0.12;
+                drawSharingan(w*0.88, h*0.88, sSize, angle);
+                drawSharingan(w*0.12, h*0.12, sSize*0.5, -angle*0.7);
+                angle += 0.008;
+
+                for (let i=0; i<3; i++) {
+                    const x = Math.random() * w;
+                    const y = Math.random() * h;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    for (let j=0; j<6; j++) {
+                        ctx.lineTo(x + (Math.random()-0.5)*80, y + (Math.random()-0.5)*80);
+                    }
+                    ctx.strokeStyle = `rgba(255,40,40,${0.06+Math.random()*0.08})`;
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+                        // ===== KHỞI TẠO: LUÔN HIỂN THỊ LOGIN =====
+            loginArea.style.display = 'flex';
+            dashboard.style.display = 'none';
+            adminTabBtn.style.display = 'none';
+
+        })();
+    </script>
 </body>
 </html>
+  }
+  
