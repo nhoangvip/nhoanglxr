@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeadLock - VIP Premium</title>
+    <!-- Phông chữ Plus Jakarta Sans mang lại cảm giác cực kỳ cao cấp, hiện đại -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Bảng màu VIP: Đen Hắc Diện Thạch & Vàng Kim */
+            --bg-base: #050505;
+            --bg-card: #0c0c0c;
+            --bg-element: #141414;
+            
+            --gold-primary: #d4af37;
+            --gold-glow: rgba(212, 175, 55, 0.3);
+            --gold-light: #f3e5ab;
+            
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            
+            --border-subtle: #222222;
+            --border-gold: rgba(212, 175, 55, 0.5);
+            
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            
+            /* Chuyển động mượt của Apple */
+            --smooth: cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            /* Nền radial siêu nhẹ, tạo độ sâu tập trung vào giữa màn hình */
+            background-image: radial-gradient(circle at center, #151515 0%, var(--bg-base) 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .app-container {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            height: 640px;
+        }
+
+        /* Thẻ Premium Card */
+        .vip-card {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 92%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 40px 30px;
+            /* Đổ bóng sâu tạo cảm giác nổi khối cao cấp */
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+            
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.5s var(--smooth);
+            will-change: transform, opacity;
+        }
+
+        .vip-card.active {
+            opacity: 1; visibility: visible; pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .vip-card.inactive-login {
+            transform: translate(-50%, -50%) scale(0.92) translateY(-20px);
+            opacity: 0;
+        }
+        
+        .vip-card.inactive-main {
+            transform: translate(-50%, -50%) scale(1.05) translateY(20px);
+            opacity: 0;
+        }
+
+        /* Typography & Header */
+        .header-section {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        /* Icon Vương Miện / Kim cương */
+        .premium-icon {
+            width: 56px; height: 56px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #2a2a2a, #111);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* Tia sáng lướt qua icon */
+        .premium-icon::after {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: skewX(-20deg);
+            animation: shine 3s infinite;
+        }
+        @keyframes shine { 0% { left: -100%; } 20%, 100% { left: 200%; } }
+
+        .premium-icon svg {
+            width: 28px; height: 28px;
+            color: var(--gold-primary);
+            filter: drop-shadow(0 2px 5px var(--gold-glow));
+        }
+
+        h1 {
+            font-size: 24px; font-weight: 800;
+            letter-spacing: -0.5px;
+            /* Chữ màu gradient Vàng cao cấp */
+            background: linear-gradient(to right, var(--gold-light), var(--gold-primary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        p.subtitle {
+            font-size: 13px; font-weight: 500;
+            color: var(--text-muted); letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Input Form */
+        .input-group { margin-bottom: 25px; }
+
+        input[type="password"] {
+            width: 100%; padding: 18px 20px;
+            background: var(--bg-element);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-size: 16px; font-weight: 600;
+            letter-spacing: 6px; text-align: center;
+            outline: none; transition: 0.3s ease;
+        }
+
+        input[type="password"]::placeholder {
+            color: #555; letter-spacing: 1px; font-weight: 500;
+        }
+
+        input[type="password"]:focus {
+            border-color: var(--gold-primary);
+            background: #1a1a1a;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        /* VIP Button */
+        .btn-vip {
+            width: 100%; padding: 18px;
+            background: linear-gradient(135deg, var(--gold-primary), #b8860b);
+            color: #000;
+            border: none; border-radius: var(--radius-md);
+            font-size: 15px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px var(--gold-glow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-vip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(212, 175, 55, 0.4);
+        }
+        .btn-vip:active { transform: translateY(0); }
+
+        /* Dashboard Items */
+        .dash-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 24px; padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .badge-pro {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold-primary);
+            padding: 6px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; letter-spacing: 1px;
+            text-transform: uppercase; border: 1px solid var(--border-gold);
+        }
+
+        .module-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .module-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 20px;
+            background: var(--bg-element);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            transition: all 0.3s var(--smooth);
+            cursor: pointer;
+        }
+
+        /* Trạng thái BẬT - Cao cấp, sáng vàng nhẹ */
+        .module-item.active {
+            background: #1a1710; /* Ám vàng đen */
+            border-color: var(--gold-primary);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(212,175,55,0.2);
+            transform: scale(1.02); /* Phóng to cực mượt */
+        }
+
+        .item-info { display: flex; flex-direction: column; gap: 4px; }
+
+        .item-name {
+            font-size: 15px; font-weight: 700;
+            color: var(--text-main); transition: 0.3s ease;
+        }
+        .item-desc {
+            font-size: 12px; color: var(--text-muted); font-weight: 500;
+        }
+
+        .module-item.active .item-name { color: var(--gold-light); }
+
+        /* Toggle Nút Gạt mượt như lụa */
+        .vip-toggle {
+            position: relative; width: 48px; height: 26px;
+            background: #2a2a2a; border-radius: 30px;
+            border: 1px solid #333;
+            transition: background 0.4s var(--smooth);
+        }
+
+        .toggle-knob {
+            position: absolute; top: 2px; left: 2px;
+            width: 20px; height: 20px;
+            background: #888; border-radius: 50%;
+            transition: transform 0.4s var(--smooth), background 0.4s var(--smooth);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .module-item.active .vip-toggle {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: var(--gold-primary);
+        }
+
+        .module-item.active .toggle-knob {
+            background: var(--gold-primary);
+            transform: translateX(22px);
+            box-shadow: 0 0 10px var(--gold-glow);
+        }
+
+        /* Hệ thống thông báo VIP (Toast) */
+        #toast-wrapper {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        }
+
+        .toast-vip {
+            background: var(--bg-card);
+            border: 1px solid var(--border-gold);
+            padding: 14px 24px; border-radius: 30px;
+            color: var(--gold-light);
+            font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8);
+            
+            transform: translateY(-20px); opacity: 0;
+            animation: toastIn 0.4s var(--smooth) forwards;
+        }
+
+        .toast-vip.error {
+            border-color: #ff3333; color: #ff3333;
+        }
+
+        .toast-vip.hide { animation: toastOut 0.3s ease-in forwards; }
+
+        @keyframes toastIn { to { transform: translateY(0); opacity: 1; } }
+        @keyframes toastOut { to { transform: translateY(-15px) scale(0.9); opacity: 0; } }
+
+    </style>
+</head>
+<body>
+
+    <div id="toast-wrapper"></div>
+
+    <div class="app-container">
+        <!-- MÀN HÌNH ĐĂNG NHẬP VIP -->
+        <div id="login-screen" class="vip-card active">
+            <div class="header-section">
+                <div class="premium-icon">
+                    <!-- Icon Vương Miện (Crown) -->
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
+                    </svg>
+                </div>
+                <h1>HEADLOCK PRO</h1>
+                <p class="subtitle">Exclusive Access Only</p>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="password-input" placeholder="Nhập mã VIP">
+            </div>
+
+            <button class="btn-vip" id="login-btn">
+                Xác Thực Đặc Quyền
+            </button>
+        </div>
+
+        <!-- MÀN HÌNH ĐIỀU KHIỂN CHÍNH -->
+        <div id="main-screen" class="vip-card">
+            <div class="dash-header">
+                <div>
+                    <h1 style="font-size: 18px; margin-bottom: 2px;">Control Center</h1>
+                    <p class="subtitle">Quản lý tính năng cao cấp</p>
+                </div>
+                <div class="badge-pro">PRO MAX</div>
+            </div>
+
+            <div class="module-list">
+                
+                <div class="module-item" onclick="toggleFeature(this, 'Aimlock')">
+                    <div class="item-info">
+                        <span class="item-name">Aimlock Pro</span>
+                        <span class="item-desc">Thuật toán theo dõi đa điểm</span>
+                    </div>
+                    <div class="vip-toggle"><div class="toggle-knob"></div></div>
+                </div>
+
+                <div class="module-item" onclick="toggleFeature(this, 'Nhẹ Tâm')">
+                    <div class="item-info">
+                        <span class="item-name">Recoil Control</span>
+                        <span class="item-desc">Đồng bộ hoá giảm giật thông minh</span>
+                    </div>
+                    <div class="vip-toggle"><div class="toggle-knob"></div></div>
+                </div>
+
+                <div class="module-item" onclick="toggleFeature(this, 'Sensi Optimize')">
+                    <div class="item-info">
+                        <span class="item-name">Sensi Ultimate</span>
+                        <span class="item-desc">Tối ưu độ nhạy cảm ứng 0ms</span>
+                    </div>
+                    <div class="vip-toggle"><div class="toggle-knob"></div></div>
+                </div>
+
+                <div class="module-item" onclick="toggleFeature(this, 'Fix Rung')">
+                    <div class="item-info">
+                        <span class="item-name">Camera Stability</span>
+                        <span class="item-desc">Ổn định khung ảnh tuyệt đối</span>
+                    </div>
+                    <div class="vip-toggle"><div class="toggle-knob"></div></div>
+                </div>
+
+                <div class="module-item" onclick="toggleFeature(this, 'Unlock FPS')">
+                    <div class="item-info">
+                        <span class="item-name">Max Hz Override</span>
+                        <span class="item-desc">Bẻ khóa giới hạn khung hình</span>
+                    </div>
+                    <div class="vip-toggle"><div class="toggle-knob"></div></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginScreen = document.getElementById('login-screen');
+        const mainScreen = document.getElementById('main-screen');
+        const passwordInput = document.getElementById('password-input');
+        const loginBtn = document.getElementById('login-btn');
+        const toastContainer = document.getElementById('toast-wrapper');
+
+        const CORRECT_PASSWORD = "3107";
+        let activeMenuItem = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast-vip ${type}`;
+            
+            // Thêm icon nhỏ vào thông báo
+            const iconHTML = type === 'success' 
+                ? `<svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
+                : `<svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+            
+            toast.innerHTML = iconHTML + `<span>${message}</span>`;
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('hide');
+                toast.addEventListener('animationend', () => toast.remove());
+            }, 2500);
+        }
+
+        function handleLogin() {
+            if (passwordInput.value === CORRECT_PASSWORD) {
+                loginBtn.innerHTML = 'Đang tải hồ sơ...';
+                
+                setTimeout(() => {
+                    loginScreen.classList.remove('active');
+                    loginScreen.classList.add('inactive-login');
+                    
+                    mainScreen.classList.remove('inactive-main');
+                    mainScreen.classList.add('active');
+                    
+                    showToast('Đăng nhập đặc quyền thành công', 'success');
+                }, 400);
+            } else {
+                showToast('Mã xác thực không hợp lệ', 'error');
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
+
+        loginBtn.addEventListener('click', handleLogin);
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        // Click logic với animation scale mượt mà
+        function toggleFeature(element, featureName) {
+            if (element === activeMenuItem) {
+                element.classList.remove('active');
+                activeMenuItem = null;
+                showToast(`Đã ngừng module: ${featureName}`, 'success');
+                return;
+            }
+
+            if (activeMenuItem !== null) {
+                // Nháy nhẹ item đang bật báo lỗi
+                activeMenuItem.style.transform = 'scale(0.98)';
+                setTimeout(() => activeMenuItem.style.transform = 'scale(1.02)', 150);
+                
+                showToast('Vui lòng tắt module hiện tại trước', 'error');
+                return;
+            }
+
+            element.classList.add('active');
+            activeMenuItem = element;
+            showToast(`Kích hoạt thành công: ${featureName}`, 'success');
+        }
+    </script>
+</body>
+</html>
